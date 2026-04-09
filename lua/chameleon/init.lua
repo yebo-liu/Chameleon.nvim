@@ -182,13 +182,26 @@ end
 --- Track the user's chosen colorscheme so Kitty reload doesn't reset it.
 M._colorscheme = nil
 M._restoring = false
-M._bg_changed = false
+M._bg_changed_at = 0
 
 --- Sync on colorscheme change.
 local function on_colorscheme()
-	if M._restoring or M._bg_changed then
+	if M._restoring then
 		return
 	end
+
+	-- If a background option change happened within the last 2 seconds,
+	-- this is likely an unwanted reset from Kitty config reload. Restore.
+	local now = vim.uv.now()
+	if M._colorscheme and (now - M._bg_changed_at) < 2000 then
+		if vim.g.colors_name ~= M._colorscheme then
+			M._restoring = true
+			vim.cmd.colorscheme(M._colorscheme)
+			M._restoring = false
+			return
+		end
+	end
+
 	M._colorscheme = vim.g.colors_name
 	if M.transparent then
 		save_backgrounds()
@@ -206,25 +219,11 @@ local function setup_autocmds()
 		group = group,
 	})
 
-	-- When Kitty reloads, terminal background detection may change &background,
-	-- causing LazyVim to re-apply the default colorscheme. We defer the restore
-	-- so it runs after LazyVim's handler has already done the unwanted reset.
+	-- Record when &background changes so on_colorscheme can detect unwanted resets.
 	api.nvim_create_autocmd("OptionSet", {
 		pattern = "background",
 		callback = function()
-			local saved = M._colorscheme
-			if not saved then
-				return
-			end
-			M._bg_changed = true
-			vim.schedule(function()
-				M._bg_changed = false
-				if vim.g.colors_name ~= saved then
-					M._restoring = true
-					vim.cmd.colorscheme(saved)
-					M._restoring = false
-				end
-			end)
+			M._bg_changed_at = vim.uv.now()
 		end,
 		group = group,
 	})
