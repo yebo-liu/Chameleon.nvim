@@ -68,12 +68,6 @@ local function get_nvim_colors()
 	colors.selection_background = hl_hex("Visual", "bg")
 	colors.selection_foreground = hl_hex("Visual", "fg")
 
-	-- Tab bar colors
-	colors.active_tab_background = hl_hex("TabLineSel", "bg") or hl_hex("StatusLine", "bg")
-	colors.active_tab_foreground = hl_hex("TabLineSel", "fg") or hl_hex("StatusLine", "fg")
-	colors.inactive_tab_background = hl_hex("TabLine", "bg") or hl_hex("StatusLineNC", "bg")
-	colors.inactive_tab_foreground = hl_hex("TabLine", "fg") or hl_hex("StatusLineNC", "fg")
-
 	local term_map = {
 		[0] = { "Normal", "bg" },
 		[1] = { "DiagnosticError", "fg" },
@@ -175,8 +169,10 @@ local function write_kitty_conf()
 		local bf = io.open(bundled, "r")
 		if bf then
 			for line in bf:lines() do
-				-- Skip comments and empty lines from the bundled file
-				if not line:match("^#") and not line:match("^%s*$") then
+				-- Skip comments, empty lines, and tab bar colors from bundled file
+				if not line:match("^#") and not line:match("^%s*$")
+					and not line:match("^%s*active_tab_") and not line:match("^%s*inactive_tab_")
+					and not line:match("^%s*tab_bar_") then
 					table.insert(lines, line)
 				end
 			end
