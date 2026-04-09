@@ -179,8 +179,18 @@ function M.decrease_opacity()
 	M.set_opacity((M.opacity or 0.85) - 0.05)
 end
 
+--- Track the user's chosen colorscheme so Kitty reload doesn't reset it.
+M._colorscheme = nil
+M._restoring = false
+
 --- Sync on colorscheme change.
 local function on_colorscheme()
+	-- Avoid loops from our own restore
+	if M._restoring then
+		return
+	end
+	-- Remember the user's chosen colorscheme
+	M._colorscheme = vim.g.colors_name
 	if M.transparent then
 		save_backgrounds()
 		clear_backgrounds()
@@ -194,6 +204,20 @@ local function setup_autocmds()
 	api.nvim_create_autocmd({ "ColorScheme", "VimResume", "VimEnter" }, {
 		pattern = "*",
 		callback = on_colorscheme,
+		group = group,
+	})
+
+	-- When Kitty reloads, terminal background detection may change &background,
+	-- causing LazyVim to re-apply the default colorscheme. Restore the user's choice.
+	api.nvim_create_autocmd("OptionSet", {
+		pattern = "background",
+		callback = function()
+			if M._colorscheme and vim.g.colors_name ~= M._colorscheme then
+				M._restoring = true
+				vim.cmd.colorscheme(M._colorscheme)
+				M._restoring = false
+			end
+		end,
 		group = group,
 	})
 end
