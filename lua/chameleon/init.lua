@@ -21,7 +21,12 @@ end
 local function get_nvim_colors()
 	local colors = {}
 
+	-- For transparent themes, Normal bg is nil.
+	-- Try common fallback groups, then check if the colorscheme exposes a palette.
 	colors.background = hl_hex("Normal", "bg")
+		or hl_hex("NormalFloat", "bg")
+		or hl_hex("NormalNC", "bg")
+		or hl_hex("StatusLine", "bg")
 	colors.foreground = hl_hex("Normal", "fg")
 	colors.cursor = hl_hex("Cursor", "bg") or hl_hex("Normal", "fg")
 	colors.cursor_text_color = hl_hex("Cursor", "fg") or hl_hex("Normal", "bg")
