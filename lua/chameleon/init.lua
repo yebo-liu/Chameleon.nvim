@@ -82,7 +82,7 @@ local function sync_to_kitty()
 	-- Reload Kitty config via SIGUSR1
 	local pid = vim.env.KITTY_PID
 	if pid then
-		vim.uv.kill(tonumber(pid), "sigusr1")
+		vim.fn.system({ "kill", "-SIGUSR1", pid })
 	end
 end
 
