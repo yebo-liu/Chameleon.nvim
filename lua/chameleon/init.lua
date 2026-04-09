@@ -106,7 +106,7 @@ local function set_kitty_colors(colors, sync)
 		return
 	end
 
-	local cmd = { "kitty", "@", "set-colors", "--match=recent:0", unpack(args) }
+	local cmd = { "kitty", "@", "set-colors", unpack(args) }
 	if sync then
 		fn.system(cmd)
 	else
