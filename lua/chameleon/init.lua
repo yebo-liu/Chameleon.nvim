@@ -68,6 +68,12 @@ local function get_nvim_colors()
 	colors.selection_background = hl_hex("Visual", "bg")
 	colors.selection_foreground = hl_hex("Visual", "fg")
 
+	-- Tab bar colors
+	colors.active_tab_background = hl_hex("TabLineSel", "bg") or hl_hex("StatusLine", "bg")
+	colors.active_tab_foreground = hl_hex("TabLineSel", "fg") or hl_hex("StatusLine", "fg")
+	colors.inactive_tab_background = hl_hex("TabLine", "bg") or hl_hex("StatusLineNC", "bg")
+	colors.inactive_tab_foreground = hl_hex("TabLine", "fg") or hl_hex("StatusLineNC", "fg")
+
 	local term_map = {
 		[0] = { "Normal", "bg" },
 		[1] = { "DiagnosticError", "fg" },
